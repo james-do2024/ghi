@@ -4,8 +4,10 @@ Copyright © 2024 James Taylor <james.taylor@fastmail.com>
 package cmd
 
 import (
+	"log"
 	"os"
 
+	"github.com/james-do2024/ghi/config"
 	"github.com/spf13/cobra"
 )
 
@@ -20,9 +22,13 @@ useful in scripting and automation.`,
 }
 
 func Execute() {
+	if ttyErr := config.TTYVerify(); ttyErr != nil {
+		log.Fatalln(ttyErr)
+	}
+
 	err := rootCmd.Execute()
 	if err != nil {
-		os.Exit(1)
+		os.Exit(config.ExitErr)
 	}
 }
 
