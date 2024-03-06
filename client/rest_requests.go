@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/go-github/v60/github"
 )
@@ -12,20 +11,30 @@ type RestRequest struct {
 	Ctx       context.Context
 }
 
-func (r *RestRequest) GetDirectoryContents(owner, repo, path string) ([]*github.RepositoryContent, error) {
+func (r *RestRequest) GetContent(owner, repo, path string) (*string, []*github.RepositoryContent, error) {
 	opt := &github.RepositoryContentGetOptions{}
-	_, directoryContent, _, err := r.GitClient.Repositories.GetContents(r.Ctx, owner, repo, path, opt)
+	fileContent, directoryContent, _, err := r.GitClient.Repositories.GetContents(r.Ctx, owner, repo, path, opt)
 	if err != nil {
-		return nil, fmt.Errorf("fetching directory contents failed: %v", err)
+		return nil, nil, err
 	}
-	return directoryContent, nil
+
+	// fileContent can only be non-nil if we have requested a file
+	// We return a pointer to the file's contents if this is the case
+	if fileContent != nil {
+		rawFile, err := getFileContent(fileContent)
+		if err != nil {
+			return nil, nil, err
+		}
+		return rawFile, nil, nil
+	}
+	return nil, directoryContent, nil
 }
 
-func (r *RestRequest) GetFileContent(owner, repo, path string) (*github.RepositoryContent, error) {
-	opt := &github.RepositoryContentGetOptions{}
-	fileContent, _, _, err := r.GitClient.Repositories.GetContents(r.Ctx, owner, repo, path, opt)
+func getFileContent(content *github.RepositoryContent) (*string, error) {
+	rawFile, err := content.GetContent()
 	if err != nil {
-		return nil, fmt.Errorf("fetching file content failed: %v", err)
+		return nil, err
 	}
-	return fileContent, nil
+
+	return &rawFile, nil
 }
