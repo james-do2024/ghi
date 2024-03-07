@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type ViewFunction func(*string, []*github.RepositoryContent)
+type ViewFunction func(string, *string, []*github.RepositoryContent)
 
 var rootCmd = &cobra.Command{
 	Use:   "ghi",
@@ -27,10 +27,6 @@ user to step through any given GitHub repository interactively.
 
 ghi may also be run non-interactively with its 'view' subcommand, which is
 useful in scripting and automation.`,
-}
-
-func init() {
-	rootCmd.Flags().BoolP("debug", "d", false, "Run in debug mode")
 }
 
 func Execute() {
@@ -64,7 +60,7 @@ func cmdMain(args []string, vf ViewFunction) {
 		os.Exit(config.ExitErr)
 	}
 
-	vf(file, dir)
+	vf(path, file, dir)
 }
 
 func runRequest(owner, repo, path string) (*string, []*github.RepositoryContent, error) {
