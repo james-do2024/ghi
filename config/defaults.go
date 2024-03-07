@@ -19,6 +19,7 @@ var defaultMap = map[string]string{
 	"authToken":        "GH_AUTH_TOKEN",
 	"defaultBaseURL":   "GH_BASE_URL",
 	"defaultUserAgent": "GH_USER_AGENT",
+	"syntaxColorTheme": "GH_COLOR_THEME",
 }
 
 // For logging purposes, GetEnvIfSet returns the env var name and its value
