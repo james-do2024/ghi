@@ -8,6 +8,7 @@ import (
 	"github.com/alecthomas/chroma/formatters"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
+	"github.com/james-do2024/ghi/config"
 )
 
 func Colorize(content *string) (string, error) {
@@ -36,8 +37,11 @@ func Colorize(content *string) (string, error) {
 }
 
 func getStyle() *chroma.Style {
-	style := styles.Get("monokai")
-	if style == nil {
+	var style *chroma.Style
+	_, theme, err := config.GetEnvIfSet("syntaxColorTheme")
+
+	style = styles.Get(theme)
+	if err != nil || style == nil {
 		style = styles.Fallback
 	}
 	return style
