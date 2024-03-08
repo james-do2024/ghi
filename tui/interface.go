@@ -33,6 +33,15 @@ func (t *TuiState) Interact(req *client.RestRequest) error {
 		// If we're displaying a file, try to highlight and page it
 		if t.FileContent != nil {
 			pageCode(t)
+
+			// This fixes an interaction bug where the DirMap state
+			// after a page required you to hit '..' twice.
+			req.NavigateUp()
+
+			if err := t.UpdateContent(req); err != nil {
+				return fmt.Errorf("error updating content: %v", err)
+			}
+			continue
 		} else {
 			// Golang's map output isn't guaranteed to be in order,
 			// so we address that here
@@ -40,6 +49,7 @@ func (t *TuiState) Interact(req *client.RestRequest) error {
 			for i := range t.DirMap {
 				keysToSort = append(keysToSort, i)
 			}
+
 			sort.Ints(keysToSort)
 			for _, name := range keysToSort {
 				fmt.Printf("[%d] %s\n", name, t.DirMap[name])
@@ -48,6 +58,11 @@ func (t *TuiState) Interact(req *client.RestRequest) error {
 
 		// Get user input, treat failure as fatal
 		input, err := displayPrompt()
+
+		// This gnarly collection of escape codes does a little "refresh" of the
+		// display, so you don't get a long trail of output while navigating
+		fmt.Printf("\033[%dA\n\033[0J", len(t.DirMap)+2)
+
 		if err != nil {
 			return fmt.Errorf("error reading input: %v", err)
 		}
