@@ -16,7 +16,7 @@ import (
 type ViewFunction func(*tui.TuiState, *client.RestRequest)
 
 var rootCmd = &cobra.Command{
-	Use:   "ghi",
+	Use:   "ghi [explore/view] [org/repo path]",
 	Short: "A GitHub CLI application",
 	Long: `GitHub Interactive (ghi) is a simple command line application which allows a
 user to step through any given GitHub repository interactively.
