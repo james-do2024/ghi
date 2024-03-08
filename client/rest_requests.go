@@ -68,11 +68,11 @@ func (r *RestRequest) GetContent() (*string, []*github.RepositoryContent, error)
 		// fileContent can only be non-nil if we have requested a file
 		// We return a pointer to the file's contents if this is the case
 		if fileContent != nil {
-			rawFile, err := getFileContent(fileContent)
+			rawFile, err := fileContent.GetContent()
 			if err != nil {
 				return nil, nil, err
 			}
-			return rawFile, nil, nil // Pagination not required for files
+			return &rawFile, nil, nil // Pagination not required for files
 		}
 
 		// Append as we go, break if there is no further pagination to be done
@@ -82,13 +82,4 @@ func (r *RestRequest) GetContent() (*string, []*github.RepositoryContent, error)
 		}
 	}
 	return nil, allContent, nil
-}
-
-func getFileContent(content *github.RepositoryContent) (*string, error) {
-	rawFile, err := content.GetContent()
-	if err != nil {
-		return nil, err
-	}
-
-	return &rawFile, nil
 }
