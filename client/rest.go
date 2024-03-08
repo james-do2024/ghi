@@ -66,6 +66,6 @@ func applyEnvVars(c *github.Client) error {
 
 // Validates structure and size only
 func isPATValid(token string) bool {
-	tokenRx := regexp.MustCompile(`^github_pat_[a-zA-Z0-9_]{28,243}$`)
+	tokenRx := regexp.MustCompile(`^github_pat_[a-zA-Z0-9_]{29,244}$`)
 	return tokenRx.MatchString(token)
 }
