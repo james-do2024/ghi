@@ -2,18 +2,55 @@ package client
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/google/go-github/v60/github"
 )
 
 type RestRequest struct {
-	GitClient *github.Client
-	Ctx       context.Context
+	Owner       string
+	Repo        string
+	CurrentPath string
+	GitClient   *github.Client
+	Ctx         context.Context
 }
 
-func (r *RestRequest) GetContent(owner, repo, path string) (*string, []*github.RepositoryContent, error) {
+func (r *RestRequest) NavigateUp() {
+	if r.CurrentPath == "" {
+		// Already at the root, do nothing
+		return
+	}
+	lastSlash := strings.LastIndex(r.CurrentPath, "/")
+	if lastSlash > 0 {
+		r.CurrentPath = r.CurrentPath[:lastSlash]
+	} else {
+		// Move to root
+		r.CurrentPath = ""
+	}
+}
+
+func (r *RestRequest) NavigateRoot() {
+	r.CurrentPath = "" // Simply reset to root
+}
+
+func (r *RestRequest) NavigateIndex(idx int, dirMap map[int]string) {
+	// Check if the index is valid for the current directory listing
+	if name, ok := dirMap[idx]; ok {
+		// If valid, update the path
+		if r.CurrentPath == "" {
+			r.CurrentPath = name
+		} else {
+			r.CurrentPath = strings.TrimRight(r.CurrentPath, "/") + "/" + name
+		}
+	} else {
+		fmt.Printf("invalid index: %d\n", idx)
+	}
+}
+
+func (r *RestRequest) GetContent() (*string, []*github.RepositoryContent, error) {
 	opt := &github.RepositoryContentGetOptions{}
-	fileContent, directoryContent, _, err := r.GitClient.Repositories.GetContents(r.Ctx, owner, repo, path, opt)
+	fileContent, directoryContent, _, err := r.GitClient.Repositories.GetContents(r.Ctx, r.Owner, r.Repo, r.CurrentPath, opt)
 	if err != nil {
 		return nil, nil, err
 	}
