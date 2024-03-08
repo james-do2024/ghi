@@ -1,6 +1,6 @@
 module github.com/james-do2024/ghi
 
-go 1.21.6
+go 1.21
 
 require (
 	github.com/alecthomas/chroma v0.10.0
