@@ -55,6 +55,13 @@ func (r *RestRequest) GetContent() (*string, []*github.RepositoryContent, error)
 	for {
 		fileContent, directoryContent, resp, err := r.GitClient.Repositories.GetContents(r.Ctx, r.Owner, r.Repo, r.CurrentPath, opt)
 		if err != nil {
+			if errResp, ok := err.(*github.ErrorResponse); ok {
+				if errResp.Response.StatusCode == 404 {
+					// Specific handling for 404 errors
+					return nil, nil, fmt.Errorf("content not found at path '%s' in repository '%s/%s'", r.CurrentPath, r.Owner, r.Repo)
+				}
+			}
+			// Otherwise, return whatever kind of error it is.
 			return nil, nil, err
 		}
 
