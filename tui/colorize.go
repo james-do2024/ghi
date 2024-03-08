@@ -11,19 +11,19 @@ import (
 	"github.com/james-do2024/ghi/config"
 )
 
-func Colorize(content *string) (string, error) {
+func (t *TuiState) Colorize() (string, error) {
 	style := getStyle()
 	formatter, err := getFormatter()
 	if formatter == nil {
 		return "", fmt.Errorf("terminal source code formatter not found")
 	}
 
-	lexer := lexers.Analyse(*content)
+	lexer := lexers.Analyse(*t.FileContent)
 	if lexer == nil {
 		lexer = lexers.Fallback
 	}
 
-	iterator, err := tokenizeInput(lexer, content)
+	iterator, err := tokenizeInput(lexer, t.FileContent)
 	if err != nil {
 		return "", err
 	}
