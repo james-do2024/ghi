@@ -53,13 +53,13 @@ func (t *TuiState) Interact(req *client.RestRequest) error {
 		}
 
 		// Handle user input
-		switch {
-		case input == "q" || input == "Q": // Be a little forgiving
+		switch input {
+		case "q", "Q": // Be a little forgiving
 			fmt.Println("Exiting...")
 			os.Exit(config.ExitOk)
-		case input == "..": // Move up one directory
+		case "..": // Move up one directory
 			req.NavigateUp()
-		case input == "^": // Move to the root directory
+		case "^": // Move to the root directory
 			req.NavigateRoot()
 		default: // Check if input is a number for navigation
 			if idx, err := strconv.Atoi(input); err == nil {
