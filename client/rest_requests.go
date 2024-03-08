@@ -49,22 +49,32 @@ func (r *RestRequest) NavigateIndex(idx int, dirMap map[int]string) {
 }
 
 func (r *RestRequest) GetContent() (*string, []*github.RepositoryContent, error) {
-	opt := &github.RepositoryContentGetOptions{}
-	fileContent, directoryContent, _, err := r.GitClient.Repositories.GetContents(r.Ctx, r.Owner, r.Repo, r.CurrentPath, opt)
-	if err != nil {
-		return nil, nil, err
-	}
+	var allContent []*github.RepositoryContent
 
-	// fileContent can only be non-nil if we have requested a file
-	// We return a pointer to the file's contents if this is the case
-	if fileContent != nil {
-		rawFile, err := getFileContent(fileContent)
+	opt := &github.RepositoryContentGetOptions{}
+	for {
+		fileContent, directoryContent, resp, err := r.GitClient.Repositories.GetContents(r.Ctx, r.Owner, r.Repo, r.CurrentPath, opt)
 		if err != nil {
 			return nil, nil, err
 		}
-		return rawFile, nil, nil
+
+		// fileContent can only be non-nil if we have requested a file
+		// We return a pointer to the file's contents if this is the case
+		if fileContent != nil {
+			rawFile, err := getFileContent(fileContent)
+			if err != nil {
+				return nil, nil, err
+			}
+			return rawFile, nil, nil // Pagination not required for files
+		}
+
+		// Append as we go, break if there is no further pagination to be done
+		allContent = append(allContent, directoryContent...)
+		if resp.NextPage == 0 {
+			break
+		}
 	}
-	return nil, directoryContent, nil
+	return nil, allContent, nil
 }
 
 func getFileContent(content *github.RepositoryContent) (*string, error) {
