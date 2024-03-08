@@ -32,7 +32,7 @@ func (t *TuiState) Interact(req *client.RestRequest) error {
 	for {
 		// If we're displaying a file, try to highlight and page it
 		if t.FileContent != nil {
-			pageCode(t, t.FileContent)
+			pageCode(t)
 		} else {
 			// Golang's map output isn't guaranteed to be in order,
 			// so we address that here
@@ -143,17 +143,14 @@ func checkLessRSupport() bool {
 	return bytes.Contains([]byte(helpText), []byte("-R"))
 }
 
-func pageCode(t *TuiState, content *string) {
-	// Update the file content state
-	t.FileContent = content
-
+func pageCode(t *TuiState) {
 	// Attempt to colorize the file content
 	var output *string
 	colorized, err := t.Colorize()
 	if err != nil {
 		// If colorization fails, use the original file content for paging
 		log.Printf("Failed to colorize file content: %v\n", err)
-		output = content
+		output = t.FileContent
 	} else {
 		output = &colorized
 	}
