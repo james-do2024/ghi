@@ -55,7 +55,7 @@ func cmdMain(args []string, vf ViewFunction) {
 
 	c, initErr := client.NewRestClient()
 	if initErr != nil {
-		log.Fatalln("unable to initialize REST client") // Simply discontinuing here
+		log.Fatalf("unable to initialize REST client: %v\n", initErr) // Simply discontinuing here
 	}
 	req := &client.RestRequest{
 		Owner:       owner,
