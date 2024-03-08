@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"regexp"
 	"strings"
 
@@ -30,30 +29,35 @@ useful in scripting and automation.`,
 }
 
 func Execute() {
+	// Treat these core errors as fatal every time
 	if ttyErr := config.TTYVerify(); ttyErr != nil {
 		log.Fatalln(ttyErr)
 	}
 
 	err := rootCmd.Execute()
 	if err != nil {
-		os.Exit(config.ExitErr)
+		log.Fatalln(err)
 	}
 }
 
 func cmdMain(args []string, vf ViewFunction) {
 	var owner, repo, path string
-	var err error
+	var parseErr, initErr, contentUpdateErr error
 
 	ts := tui.Init()
 
 	if len(args) == 1 {
-		owner, repo, path, err = handleOneArg(args[0])
+		owner, repo, path, parseErr = handleOneArg(args[0])
 	} else {
-		owner, repo, path, err = handleTwoArgs(args[0], args[1])
+		owner, repo, path, parseErr = handleTwoArgs(args[0], args[1])
 	}
 
-	c, err := client.NewRestClient()
-	if err != nil {
+	if parseErr != nil {
+		log.Fatalln(parseErr)
+	}
+
+	c, initErr := client.NewRestClient()
+	if initErr != nil {
 		log.Fatalln("unable to initialize REST client") // Simply discontinuing here
 	}
 	req := &client.RestRequest{
@@ -64,29 +68,13 @@ func cmdMain(args []string, vf ViewFunction) {
 		Ctx:         context.Background(),
 	}
 
-	if err == nil {
-		// file, dir, err = runRequest(req)
-		contentUpdateErr := ts.UpdateContent(req)
-		if contentUpdateErr != nil {
-			log.Fatalln(contentUpdateErr)
-		}
-	}
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(config.ExitErr)
+	contentUpdateErr = ts.UpdateContent(req)
+	if contentUpdateErr != nil {
+		log.Fatalln(contentUpdateErr)
 	}
 
 	vf(ts, req)
 }
-
-// unc runRequest(req *client.RestRequest) (*string, []*github.RepositoryContent, error) {
-// 	file, dir, err := req.GetContent()
-// 	if err != nil {
-// 		return nil, nil, err
-// 	}
-
-// 	return file, dir, nil
-// }
 
 func handleOneArg(arg string) (owner, repo, path string, err error) {
 	// Allow users to enter: ghi <view, explore> owner/repo [path]
