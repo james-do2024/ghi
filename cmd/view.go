@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 James Taylor <james.taylor@fastmail.com>
-*/
 package cmd
 
 import (
