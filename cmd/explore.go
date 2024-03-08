@@ -4,11 +4,10 @@ Copyright © 2024 James Taylor <james.taylor@fastmail.com>
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 
-	"github.com/google/go-github/v60/github"
+	"github.com/james-do2024/ghi/client"
 	"github.com/james-do2024/ghi/config"
 	"github.com/james-do2024/ghi/tui"
 	"github.com/spf13/cobra"
@@ -48,14 +47,9 @@ func init() {
 	rootCmd.AddCommand(exploreCmd)
 }
 
-func richView(path string, file *string, dir []*github.RepositoryContent) {
-	if file != nil {
-		colorized, err := tui.Colorize(file)
-		if err != nil {
-			fmt.Print(*file) // Even if highlighting fails, we can print the contents
-			log.Println(err) // ... but log what happened
-		} else {
-			fmt.Print(colorized)
-		}
+func richView(ts *tui.TuiState, req *client.RestRequest) {
+	err := ts.Interact(req)
+	if err != nil {
+		log.Fatalln(err)
 	}
 }

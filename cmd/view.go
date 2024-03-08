@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/google/go-github/v60/github"
+	"github.com/james-do2024/ghi/client"
 	"github.com/james-do2024/ghi/config"
+	"github.com/james-do2024/ghi/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -35,16 +36,13 @@ func init() {
 	rootCmd.AddCommand(viewCmd)
 }
 
-func simpleView(path string, file *string, dir []*github.RepositoryContent) {
-	if file != nil {
-		fmt.Print(*file)
+func simpleView(ts *tui.TuiState, req *client.RestRequest) {
+	if ts.FileContent != nil {
+		fmt.Print(*ts.FileContent)
 	} else {
-		fmt.Printf("path: %s\n\n", path)
-		for _, entry := range dir {
-			if *entry.Type == "dir" {
-				*entry.Name += "/" // Simple way to differentiate directories in repo view
-			}
-			fmt.Println(*entry.Name)
+		fmt.Printf("path: %s\n\n", req.CurrentPath)
+		for _, entry := range ts.DirMap {
+			fmt.Println(entry)
 		}
 	}
 

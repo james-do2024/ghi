@@ -11,13 +11,13 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/google/go-github/v60/github"
 	"github.com/james-do2024/ghi/client"
 	"github.com/james-do2024/ghi/config"
+	"github.com/james-do2024/ghi/tui"
 	"github.com/spf13/cobra"
 )
 
-type ViewFunction func(string, *string, []*github.RepositoryContent)
+type ViewFunction func(*tui.TuiState, *client.RestRequest)
 
 var rootCmd = &cobra.Command{
 	Use:   "ghi",
@@ -42,9 +42,9 @@ func Execute() {
 
 func cmdMain(args []string, vf ViewFunction) {
 	var owner, repo, path string
-	var file *string
-	var dir []*github.RepositoryContent
 	var err error
+
+	ts := tui.Init()
 
 	if len(args) == 1 {
 		owner, repo, path, err = handleOneArg(args[0])
@@ -52,36 +52,41 @@ func cmdMain(args []string, vf ViewFunction) {
 		owner, repo, path, err = handleTwoArgs(args[0], args[1])
 	}
 
+	c, err := client.NewRestClient()
+	if err != nil {
+		log.Fatalln("unable to initialize REST client") // Simply discontinuing here
+	}
+	req := &client.RestRequest{
+		Owner:       owner,
+		Repo:        repo,
+		CurrentPath: path,
+		GitClient:   c,
+		Ctx:         context.Background(),
+	}
+
 	if err == nil {
-		file, dir, err = runRequest(owner, repo, path)
+		// file, dir, err = runRequest(req)
+		contentUpdateErr := ts.UpdateContent(req)
+		if contentUpdateErr != nil {
+			log.Fatalln(contentUpdateErr)
+		}
 	}
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(config.ExitErr)
 	}
 
-	vf(path, file, dir)
+	vf(ts, req)
 }
 
-func runRequest(owner, repo, path string) (*string, []*github.RepositoryContent, error) {
-	ctx := context.Background()
-	c, err := client.NewRestClient()
-	if err != nil {
-		return nil, nil, err
-	}
+// unc runRequest(req *client.RestRequest) (*string, []*github.RepositoryContent, error) {
+// 	file, dir, err := req.GetContent()
+// 	if err != nil {
+// 		return nil, nil, err
+// 	}
 
-	req := &client.RestRequest{
-		GitClient: c,
-		Ctx:       ctx,
-	}
-
-	file, dir, err := req.GetContent(owner, repo, path)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return file, dir, nil
-}
+// 	return file, dir, nil
+// }
 
 func handleOneArg(arg string) (owner, repo, path string, err error) {
 	// Allow users to enter: ghi <view, explore> owner/repo [path]
