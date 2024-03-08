@@ -33,5 +33,20 @@ q  : Quits the interactive session
 
 Use the `-h` argument for online documentation.
 
+## Environment Variables
+
+The following must be set for ghi to work:
+
+`GH_AUTH_TOKEN`: ghi is tested and working with "fine-grained" GitHub auth tokens
+
+Additionally, the user can supply any color scheme supported by the [alecthomas/chroma](https://github.com/alecthomas/chroma) package
+by setting `GH_COLOR_THEME`. The author recommends "monokai".
+
+In the event that your base API URL is other than api.github.com (as it is for some GitHub Enterprise subscribers), an alternate may be specified 
+in `GH_BASE_URL`.
+
+Lastly, if you wish to identify with a different user agent than the official GitHub Go API package provides, you may do so by setting
+`GH_USER_AGENT` to anything but an empty string. The GitHub API requires a user agent.
+
 ## Author
 James Taylor
