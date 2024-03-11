@@ -5,7 +5,7 @@ Think of it like the official gh CLI, with no oversight and a small fraction of 
 
 ## Usage
 
-ghi is a Conda application with two subcommands, `view` and `explore`. 
+ghi is a Cobra application with two subcommands, `view` and `explore`. 
 
 The former is a non-interactive command that displays contents of a repository or file and immediately
 exits. 
